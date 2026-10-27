@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#6d28d9">
+  <meta name="description" content="ระบบรวมลิงก์ข้อมูลและบริการของโรงเรียนพัฒนศึกษา">
+  <meta name="author" content="กลุ่มสารสนเทศโรงเรียนพัฒนศึกษา">
+  
+  <title>School Link | โรงเรียนพัฒนศึกษา</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="./favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+  <link rel="manifest" href="./manifest.json">
+
+  <!-- Open Graph (แชร์ลงโซเชียล) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="School Link | โรงเรียนพัฒนศึกษา">
+  <meta property="og:description" content="ระบบรวมลิงก์ข้อมูลและบริการของโรงเรียนพัฒนศึกษา">
+  <meta property="og:image" content="./og-image.png">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Prompt', 'sans-serif'] },
+          colors: {
+            brand: {
+              50:'#f5f3ff',100:'#ede9fe',200:'#ddd6fe',300:'#c4b5fd',400:'#a78bfa',
+              500:'#8b5cf6',600:'#7c3aed',700:'#6d28d9',800:'#5b21b6',900:'#4c1d95'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body { font-family: 'Prompt', sans-serif; }
+    
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+    .fade-up { animation: fadeUp .6s ease both; }
+    
+    @keyframes pulseRing {
+      0% { transform: scale(0.95); opacity: 1; }
+      100% { transform: scale(1.3); opacity: 0; }
+    }
+    .pulse-ring { animation: pulseRing 2s ease-out infinite; }
+    
+    @keyframes spinSlow { to { transform: rotate(360deg); } }
+    .spin-slow { animation: spinSlow 1.5s linear infinite; }
+    
+    /* Loading dots */
+    .dot { animation: dotBounce 1.4s infinite ease-in-out both; }
+    .dot:nth-child(1) { animation-delay: -0.32s; }
+    .dot:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes dotBounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+  </style>
+
+  <!-- ⚙️ ตั้งค่าตรงนี้ -->
+  <script>
+    // 👉 วาง URL ของ GAS Web App ตรงนี้ (ลงท้ายด้วย /exec)
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbzx4wpkCQNFswUAVOSW9febrGbTUmA2_xXjXhSoWfXVivZOzqHGBJ4xo99LxjiidH2fNw/exec';
+    
+    // 👉 เวลานับถอยหลังก่อน redirect (วินาที), 0 = redirect ทันที
+    const REDIRECT_DELAY = 2;
+  </script>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-brand-900 via-brand-700 to-indigo-800 flex items-center justify-center p-6 antialiased">
+
+  <!-- พื้นหลังตกแต่ง -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-white/10 blur-3xl"></div>
+    <div class="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-white/10 blur-3xl"></div>
+    <div class="absolute top-1/3 left-1/4 w-2 h-2 rounded-full bg-white/40 pulse-ring"></div>
+    <div class="absolute top-2/3 right-1/3 w-2 h-2 rounded-full bg-white/40 pulse-ring" style="animation-delay:.5s"></div>
+  </div>
+
+  <main class="relative z-10 w-full max-w-md text-center text-white fade-up">
+    
+    <!-- โลโก้ + Spinner -->
+    <div class="relative mx-auto w-32 h-32 mb-8">
+      <div class="absolute inset-0 rounded-full border-4 border-white/20"></div>
+      <div class="absolute inset-0 rounded-full border-4 border-transparent border-t-white/90 border-r-white/90 spin-slow"></div>
+      <div class="absolute inset-2 rounded-full bg-white/95 flex items-center justify-center shadow-2xl">
+        <img id="schoolLogo" 
+             src="https://ui-avatars.com/api/?name=PS&background=6d28d9&color=fff&bold=true&rounded=true&size=128" 
+             alt="โลโก้โรงเรียนพัฒนศึกษา"
+             class="w-20 h-20 rounded-full object-contain"
+             onerror="this.src='https://ui-avatars.com/api/?name=PS&background=6d28d9&color=fff&bold=true&rounded=true&size=128'">
+      </div>
+    </div>
+
+    <!-- ชื่อโรงเรียน -->
+    <h1 class="text-2xl font-bold tracking-tight">โรงเรียนพัฒนศึกษา</h1>
+    <p class="text-xs tracking-[0.3em] text-white/70 mt-1">PATTANASUKSA SCHOOL</p>
+
+    <!-- คำโปรย -->
+    <p class="mt-6 text-sm text-white/85">
+      ระบบรวมลิงก์ข้อมูลและบริการของโรงเรียน
+    </p>
+
+    <!-- Loading state -->
+    <div id="loadingBox" class="mt-10">
+      <p class="text-sm text-white/90 mb-3">
+        <span id="statusText">กำลังเชื่อมต่อระบบ...</span>
+      </p>
+      <div class="flex justify-center gap-2 mb-6">
+        <span class="dot w-2.5 h-2.5 rounded-full bg-white"></span>
+        <span class="dot w-2.5 h-2.5 rounded-full bg-white"></span>
+        <span class="dot w-2.5 h-2.5 rounded-full bg-white"></span>
+      </div>
+      <p class="text-xs text-white/60">
+        ระบบจะพาคุณไปยังหน้าหลักใน <span id="countdown" class="font-bold text-white">2</span> วินาที
+      </p>
+    </div>
+
+    <!-- ปุ่ม Manual -->
+    <div class="mt-8 flex flex-col gap-2">
+      <a id="enterBtn" href="#" 
+         class="inline-flex items-center justify-center gap-2 rounded-full bg-white text-brand-700 font-semibold py-3 px-6 shadow-xl hover:bg-brand-50 transition">
+        <i>→</i> เข้าสู่ระบบทันที
+      </a>
+      <button onclick="location.reload()" 
+              class="text-xs text-white/60 hover:text-white transition py-2">
+        โหลดใหม่
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <p class="mt-12 text-[11px] text-white/50 leading-relaxed">
+      พัฒนาโดย กลุ่มสารสนเทศโรงเรียนพัฒนศึกษา<br>
+      Design By Sola
+    </p>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ---------- Element refs ----------
+      const GAS_URL_SAFE = (typeof GAS_URL === 'string' && GAS_URL.indexOf('http') === 0) ? GAS_URL : '';
+      const statusText = document.getElementById('statusText');
+      const countdownEl = document.getElementById('countdown');
+      const enterBtn = document.getElementById('enterBtn');
+      const schoolLogo = document.getElementById('schoolLogo');
+
+      // ---------- ตรวจสอบ URL ----------
+      if (!GAS_URL_SAFE || GAS_URL_SAFE.indexOf('XXXXXXXXXXXXXXXXXXXX') !== -1) {
+        statusText.textContent = '⚠️ ยังไม่ได้ตั้งค่า GAS URL';
+        statusText.className = 'text-amber-300 font-semibold';
+        countdownEl.parentElement.parentElement.style.display = 'none';
+        enterBtn.style.display = 'none';
+        return;
+      }
+
+      enterBtn.href = GAS_URL_SAFE;
+
+      // ---------- ดึงโลโก้โรงเรียนจาก GAS (optional) ----------
+      // ถ้าต้องการ dynamic logo ให้แก้ที่ Code.gs เพิ่ม endpoint getSchoolMeta()
+      // ตอนนี้ใช้ default ไปก่อน
+
+      // ---------- Redirect ----------
+      const delay = Math.max(0, parseInt(REDIRECT_DELAY, 10) || 0);
+      
+      if (delay === 0) {
+        statusText.textContent = 'กำลังพาคุณเข้าสู่ระบบ...';
+        window.location.replace(GAS_URL_SAFE);
+        return;
+      }
+
+      let remaining = delay;
+      countdownEl.textContent = remaining;
+      statusText.textContent = 'เชื่อมต่อสำเร็จ กำลังพาคุณเข้าสู่ระบบ...';
+
+      const timer = setInterval(function () {
+        remaining -= 1;
+        if (remaining <= 0) {
+          clearInterval(timer);
+          statusText.textContent = 'กำลังพาคุณเข้าสู่ระบบ...';
+          window.location.replace(GAS_URL_SAFE);
+          return;
+        }
+        countdownEl.textContent = remaining;
+      }, 1000);
+
+      // ---------- Keyboard shortcut: Enter to go ----------
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          clearInterval(timer);
+          window.location.replace(GAS_URL_SAFE);
+        }
+      });
+
+      // ---------- Preload GAS URL เพื่อ speed up ----------
+      try {
+        const link = document.createElement('link');
+        link.rel = 'preconnect';
+        link.href = new URL(GAS_URL_SAFE).origin;
+        document.head.appendChild(link);
+      } catch (e) { /* ignore */ }
+
+    })();
+  </script>
+</body>
+</html>
