@@ -10,17 +10,16 @@
   <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
   
-  <!-- Theme Color มือถือ -->
   <meta name="theme-color" content="#6d28d9">
 
   <style>
-    /* ทำให้ iframe กินพื้นที่เต็มหน้าจอ 100% */
     body, html { 
       margin: 0; 
       padding: 0; 
       height: 100%; 
       overflow: hidden; 
       background-color: #f3f4f6; 
+      font-family: sans-serif;
     }
     iframe { 
       width: 100%; 
@@ -28,14 +27,67 @@
       border: none; 
       display: block;
     }
+    /* หน้าโหลดสำหรับ LINE */
+    #loading {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #6d28d9;
+      color: white;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-  <!-- 👇 วาง URL GAS ของคุณตรงนี้ (ต้องลงท้ายด้วย /exec) -->
+
+  <!-- หน้าโหลด (ถ้าเปิดจาก LINE) -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>กำลังพาคุณไปยังระบบ...</p>
+  </div>
+
+  <!-- iframe (ถ้าเปิดจาก Browser ปกติ) -->
   <iframe 
+    id="gasFrame"
     src="https://script.google.com/macros/s/AKfycbzx4wpkCQNFswUAVOSW9febrGbTUmA2_xXjXhSoWfXVivZOzqHGBJ4xo99LxjiidH2fNw/exec" 
     allow="clipboard-write; clipboard-read"
     sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
   ></iframe>
+
+  <script>
+    (function() {
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbzx4wpkCQNFswUAVOSW9febrGbTUmA2_xXjXhSoWfXVivZOzqHGBJ4xo99LxjiidH2fNw/exec";
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+
+      // ตรวจจับว่าเปิดจาก LINE, Facebook, Instagram หรือไม่
+      const isLine = ua.indexOf("Line") > -1;
+      const isFacebook = ua.indexOf("FBAN") > -1 || ua.indexOf("FBAV") > -1;
+      const isInstagram = ua.indexOf("Instagram") > -1;
+
+      if (isLine || isFacebook || isInstagram) {
+        // ถ้าเปิดจากแอป ให้ซ่อน iframe แล้วเด้งไป GAS เลย
+        document.getElementById("gasFrame").style.display = "none";
+        document.getElementById("loading").style.display = "flex";
+        
+        // เด้งไปหน้าเว็บจริงหลัง 1 วินาที
+        setTimeout(function() {
+          window.location.replace(GAS_URL);
+        }, 1000);
+      }
+    })();
+  </script>
+
 </body>
 </html>
