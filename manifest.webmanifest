@@ -1,0 +1,18 @@
+{
+  "id": "/ptn-link/",
+  "name": "School Link | โรงเรียนพัฒนศึกษา",
+  "short_name": "PTN Link",
+  "description": "รวมลิงก์ระบบงานโรงเรียนพัฒนศึกษา",
+  "lang": "th",
+  "start_url": "/ptn-link/?source=pwa",
+  "scope": "/ptn-link/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#6d28d9",
+  "theme_color": "#6d28d9",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
