@@ -2,92 +2,163 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>School Link | โรงเรียนพัฒนศึกษา</title>
-  
+
   <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="./favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
-  
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#6d28d9">
 
+  <!-- iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PTN Link">
+
   <style>
-    body, html { 
-      margin: 0; 
-      padding: 0; 
-      height: 100%; 
-      overflow: hidden; 
-      background-color: #f3f4f6; 
-      font-family: sans-serif;
-    }
-    iframe { 
-      width: 100%; 
-      height: 100%; 
-      border: none; 
-      display: block;
-    }
-    /* หน้าโหลดสำหรับ LINE */
+    html, body { margin:0; padding:0; height:100%; overflow:hidden; background:#6d28d9; }
+    iframe { width:100%; height:100%; border:none; display:block; background:#fff; }
+
     #loading {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: #6d28d9;
-      color: white;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
+      display:none; position:fixed; inset:0; background:#6d28d9; color:#fff;
+      flex-direction:column; align-items:center; justify-content:center; z-index:999;
+      font-family:sans-serif;
     }
     .spinner {
-      width: 40px; height: 40px;
-      border: 4px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 20px;
+      width:40px; height:40px; border:4px solid rgba(255,255,255,.3);
+      border-top-color:#fff; border-radius:50%; animation:spin 1s linear infinite;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* แบนเนอร์ติดตั้งแอป */
+    #installBar {
+      display:none; position:fixed; left:12px; right:12px;
+      bottom:calc(12px + env(safe-area-inset-bottom));
+      background:#fff; color:#333; border-radius:14px; padding:12px 14px;
+      box-shadow:0 6px 24px rgba(0,0,0,.25); z-index:1000;
+      font-family:sans-serif; font-size:14px; align-items:center; gap:10px;
+    }
+    #installBar img { width:40px; height:40px; border-radius:10px; }
+    #installBar .txt { flex:1; line-height:1.4; }
+    #installBar button { border:0; border-radius:999px; padding:8px 14px; font-size:14px; cursor:pointer; }
+    #btnInstall { background:#6d28d9; color:#fff; }
+    #btnClose { background:transparent; color:#888; font-size:20px; padding:4px 8px; }
   </style>
 </head>
 <body>
 
-  <!-- หน้าโหลด (ถ้าเปิดจาก LINE) -->
   <div id="loading">
     <div class="spinner"></div>
     <p>กำลังพาคุณไปยังระบบ...</p>
   </div>
 
-  <!-- iframe (ถ้าเปิดจาก Browser ปกติ) -->
-  <iframe 
+  <iframe
     id="gasFrame"
-    src="https://script.google.com/macros/s/AKfycbzx4wpkCQNFswUAVOSW9febrGbTUmA2_xXjXhSoWfXVivZOzqHGBJ4xo99LxjiidH2fNw/exec" 
+    src="https://script.google.com/macros/s/AKfycbzx4wpkCQNFswUAVOSW9febrGbTUmA2_xXjXhSoWfXVivZOzqHGBJ4xo99LxjiidH2fNw/exec"
     allow="clipboard-write; clipboard-read"
-    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-top-navigation-by-user-activation allow-downloads"
   ></iframe>
 
+  <!-- แบนเนอร์ติดตั้ง -->
+  <div id="installBar">
+    <img src="./icon-192.png" alt="">
+    <div class="txt" id="installText"><b>ติดตั้ง School Link</b><br>เปิดใช้งานได้เร็วจากหน้าจอหลัก</div>
+    <button id="btnInstall">ติดตั้ง</button>
+    <button id="btnClose" aria-label="ปิด">&times;</button>
+  </div>
+
   <script>
-    (function() {
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbzx4wpkCQNFswUAVOSW9febrGbTUmA2_xXjXhSoWfXVivZOzqHGBJ4xo99LxjiidH2fNw/exec";
-      const ua = navigator.userAgent || navigator.vendor || window.opera;
+  (function () {
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzx4wpkCQNFswUAVOSW9febrGbTUmA2_xXjXhSoWfXVivZOzqHGBJ4xo99LxjiidH2fNw/exec";
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
 
-      // ตรวจจับว่าเปิดจาก LINE, Facebook, Instagram หรือไม่
-      const isLine = ua.indexOf("Line") > -1;
-      const isFacebook = ua.indexOf("FBAN") > -1 || ua.indexOf("FBAV") > -1;
-      const isInstagram = ua.indexOf("Instagram") > -1;
+    const isLine      = /Line\//i.test(ua);
+    const isFacebook  = ua.indexOf("FBAN") > -1 || ua.indexOf("FBAV") > -1;
+    const isInstagram = ua.indexOf("Instagram") > -1;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-      if (isLine || isFacebook || isInstagram) {
-        // ถ้าเปิดจากแอป ให้ซ่อน iframe แล้วเด้งไป GAS เลย
-        document.getElementById("gasFrame").style.display = "none";
-        document.getElementById("loading").style.display = "flex";
-        
-        // เด้งไปหน้าเว็บจริงหลัง 1 วินาที
-        setTimeout(function() {
-          window.location.replace(GAS_URL);
-        }, 1000);
+    const frame = document.getElementById("gasFrame");
+    const loading = document.getElementById("loading");
+
+    // ---------- 1) จัดการ In-App Browser ----------
+    if (isLine || isFacebook || isInstagram) {
+      frame.style.display = "none";
+      loading.style.display = "flex";
+
+      const params = new URLSearchParams(location.search);
+
+      // LINE: สั่งให้เปิดในเบราว์เซอร์จริง (Chrome/Safari) เพื่อให้ติดตั้งแอปได้
+      if (isLine && !params.has("openExternalBrowser")) {
+        params.set("openExternalBrowser", "1");
+        location.replace(location.pathname + "?" + params.toString());
+        return;
       }
-    })();
-  </script>
 
+      // Facebook / Instagram (หรือ LINE ที่เปิดออกไม่ได้) → ไป GAS ตรงๆ แบบเดิม
+      setTimeout(function () { location.replace(GAS_URL); }, 1000);
+      return;
+    }
+
+    // ---------- 2) ลงทะเบียน Service Worker ----------
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js', { scope: './' })
+          .catch(function (err) { console.warn('SW register failed', err); });
+      });
+    }
+
+    // ---------- 3) ปุ่มติดตั้งแอป ----------
+    if (isStandalone) return; // ติดตั้งแล้ว ไม่ต้องแสดงแบนเนอร์
+
+    const bar = document.getElementById("installBar");
+    const btnInstall = document.getElementById("btnInstall");
+    const btnClose = document.getElementById("btnClose");
+    const txt = document.getElementById("installText");
+    const DISMISS_KEY = "ptn_install_dismissed";
+    let deferredPrompt = null;
+
+    function dismissedRecently() {
+      const t = Number(localStorage.getItem(DISMISS_KEY) || 0);
+      return Date.now() - t < 7 * 24 * 60 * 60 * 1000; // ปิดแล้วไม่แสดง 7 วัน
+    }
+
+    btnClose.onclick = function () {
+      bar.style.display = "none";
+      localStorage.setItem(DISMISS_KEY, Date.now());
+    };
+
+    // Android / Chrome / Edge
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (!dismissedRecently()) bar.style.display = "flex";
+    });
+
+    btnInstall.onclick = async function () {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      bar.style.display = "none";
+    };
+
+    window.addEventListener('appinstalled', function () {
+      bar.style.display = "none";
+    });
+
+    // iOS Safari ไม่มีปุ่มติดตั้งอัตโนมัติ → แสดงคำแนะนำแทน
+    if (isIOS && !dismissedRecently()) {
+      txt.innerHTML = '<b>ติดตั้ง School Link</b><br>แตะ <b>แชร์</b> ⬆️ แล้วเลือก <b>"เพิ่มไปยังหน้าจอโฮม"</b>';
+      btnInstall.style.display = "none";
+      setTimeout(function () { bar.style.display = "flex"; }, 1500);
+    }
+  })();
+  </script>
 </body>
 </html>
