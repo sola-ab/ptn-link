@@ -7,11 +7,12 @@
 
   <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="./favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
 
   <!-- PWA -->
-  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#6d28d9">
 
   <!-- iOS -->
@@ -66,7 +67,7 @@
 
   <!-- แบนเนอร์ติดตั้ง -->
   <div id="installBar">
-    <img src="./icon-192.png" alt="">
+    <img src="./android-chrome-192x192.png" alt="">
     <div class="txt" id="installText"><b>ติดตั้ง School Link</b><br>เปิดใช้งานได้เร็วจากหน้าจอหลัก</div>
     <button id="btnInstall">ติดตั้ง</button>
     <button id="btnClose" aria-label="ปิด">&times;</button>
@@ -93,14 +94,14 @@
 
       const params = new URLSearchParams(location.search);
 
-      // LINE: สั่งให้เปิดในเบราว์เซอร์จริง (Chrome/Safari) เพื่อให้ติดตั้งแอปได้
+      // LINE: บังคับเปิดในเบราว์เซอร์ภายนอก เพื่อให้ติดตั้งแอปได้
       if (isLine && !params.has("openExternalBrowser")) {
         params.set("openExternalBrowser", "1");
         location.replace(location.pathname + "?" + params.toString());
         return;
       }
 
-      // Facebook / Instagram (หรือ LINE ที่เปิดออกไม่ได้) → ไป GAS ตรงๆ แบบเดิม
+      // Facebook / Instagram → ไปหน้า GAS ตรงๆ
       setTimeout(function () { location.replace(GAS_URL); }, 1000);
       return;
     }
@@ -125,7 +126,7 @@
 
     function dismissedRecently() {
       const t = Number(localStorage.getItem(DISMISS_KEY) || 0);
-      return Date.now() - t < 7 * 24 * 60 * 60 * 1000; // ปิดแล้วไม่แสดง 7 วัน
+      return Date.now() - t < 7 * 24 * 60 * 60 * 1000; // ปิดแล้วไม่แสดงอีก 7 วัน
     }
 
     btnClose.onclick = function () {
@@ -152,9 +153,9 @@
       bar.style.display = "none";
     });
 
-    // iOS Safari ไม่มีปุ่มติดตั้งอัตโนมัติ → แสดงคำแนะนำแทน
+    // iOS Safari: ไม่มีปุ่มติดตั้งอัตโนมัติ จึงแสดงวิธีติดตั้งแทน
     if (isIOS && !dismissedRecently()) {
-      txt.innerHTML = '<b>ติดตั้ง School Link</b><br>แตะ <b>แชร์</b> ⬆️ แล้วเลือก <b>"เพิ่มไปยังหน้าจอโฮม"</b>';
+      txt.innerHTML = '<b>ติดตั้ง School Link</b><br>แตะ <b>แชร์</b> แล้วเลือก <b>"เพิ่มไปยังหน้าจอโฮม"</b>';
       btnInstall.style.display = "none";
       setTimeout(function () { bar.style.display = "flex"; }, 1500);
     }
